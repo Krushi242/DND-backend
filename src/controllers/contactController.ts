@@ -29,27 +29,8 @@ export const getContacts = async (req: Request, res: Response) => {
   try {
     const [rows] = await pool.query('SELECT * FROM contacts ORDER BY created_at DESC');
     res.status(200).json(rows);
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error fetching contacts:', error);
-    res.status(500).json({ error: 'Internal server error', details: error.message });
-  }
-};
-
-export const testDBConnection = async (req: Request, res: Response) => {
-  try {
-    const [result] = await pool.query('SELECT 1 as connection_test');
-    res.status(200).json({ status: 'Database connection successful', result });
-  } catch (error: any) {
-    console.error('Database connection test failed:', error);
-    res.status(500).json({ 
-      error: 'Database connection test failed', 
-      details: error.message,
-      config: {
-        host: process.env.DB_HOST,
-        user: process.env.DB_USER,
-        database: process.env.DB_NAME,
-        port: process.env.DB_PORT
-      }
-    });
+    res.status(500).json({ error: 'Internal server error' });
   }
 };
