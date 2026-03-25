@@ -28,10 +28,6 @@ export const submitContact = async (req: Request, res: Response) => {
       [name, phone, email, company, city, inquiry_type, message]
     );
 
-    // Send email notification (don't block the response)
-    sendContactEmail({ name, phone, email, company, city, inquiry_type, message })
-      .catch(err => console.error('Background email sending failed:', err));
-
     res.status(201).json({ 
       message: 'Contact form submitted successfully', 
       contactId: (result as any).insertId 
