@@ -35,3 +35,6 @@ Thumbs.db
 .npm
 .cache
 tmp/
+
+.vercel
+.env*.local
