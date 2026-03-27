@@ -53,7 +53,8 @@ export const createGalleryItem = async (req: Request, res: Response) => {
 };
 
 export const deleteGalleryItem = async (req: Request, res: Response) => {
-  const id = Number(req.query.id);
+  const rawId = req.query.id ?? req.body?.id ?? req.params?.id;
+  const id = Number(rawId);
 
   if (!Number.isInteger(id) || id <= 0) {
     return res.status(400).json({ error: 'A valid gallery id is required' });
