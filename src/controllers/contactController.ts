@@ -27,14 +27,9 @@ export const submitContact = async (req: Request, res: Response) => {
       [name, phone, email, company, city, inquiry_type, message]
     );
 
-    res.status(201).json({
-      message: 'Contact form submitted successfully',
-      contactId: (result as { insertId: number }).insertId,
-    });
-
     const mailOptions = {
-      from: `"DRD Plantech Leads" <${process.env.SMTP_USER}>`,
-      to: process.env.NOTIFICATION_EMAIL || 'patelkrushi242@gmail.com',
+      from: process.env.EMAIL_FROM || `"DRD Plantech Leads" <${process.env.SMTP_USER}>`,
+      to: process.env.EMAIL_TO || process.env.NOTIFICATION_EMAIL || process.env.SMTP_USER,
       subject: `New Lead: ${name} from ${city}`,
       html: `
         <div style="font-family: sans-serif; max-width: 600px; border: 1px solid #eee; padding: 20px;">
@@ -55,13 +50,23 @@ export const submitContact = async (req: Request, res: Response) => {
       `,
     };
 
-    void transporter.sendMail(mailOptions)
-      .then(() => {
-        console.log('Notification email sent successfully');
-      })
-      .catch((mailError) => {
-        console.error('Failed to send notification email:', mailError);
-      });
+    let notificationSent = false;
+
+    try {
+      await transporter.sendMail(mailOptions);
+      notificationSent = true;
+      console.log('Notification email sent successfully');
+    } catch (mailError) {
+      console.error('Failed to send notification email:', mailError);
+    }
+
+    res.status(201).json({
+      message: notificationSent
+        ? 'Contact form submitted successfully'
+        : 'Contact saved, but email notification failed',
+      contactId: (result as { insertId: number }).insertId,
+      notificationSent,
+    });
   } catch (error) {
     console.error('Error submitting contact form:', error);
     res.status(500).json({ error: 'Internal server error' });
