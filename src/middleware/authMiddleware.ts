@@ -6,14 +6,37 @@ interface AdminTokenPayload extends jwt.JwtPayload {
   admin: SafeAdmin;
 }
 
-export const authenticateAdmin = (req: Request, res: Response, next: NextFunction) => {
+const extractToken = (req: Request) => {
   const authHeader = req.headers.authorization;
 
-  if (!authHeader?.startsWith('Bearer ')) {
-    return res.status(401).json({ error: 'Authorization token is required' });
+  if (authHeader) {
+    if (authHeader.startsWith('Bearer ')) {
+      return authHeader.slice('Bearer '.length);
+    }
+
+    return authHeader;
   }
 
-  const token = authHeader.slice('Bearer '.length);
+  const accessTokenHeader = req.headers['x-access-token'];
+  const tokenHeader = req.headers['token'];
+
+  if (typeof accessTokenHeader === 'string' && accessTokenHeader.trim()) {
+    return accessTokenHeader.trim();
+  }
+
+  if (typeof tokenHeader === 'string' && tokenHeader.trim()) {
+    return tokenHeader.trim();
+  }
+
+  return null;
+};
+
+export const authenticateAdmin = (req: Request, res: Response, next: NextFunction) => {
+  const token = extractToken(req);
+
+  if (!token) {
+    return res.status(401).json({ error: 'Authorization token is required' });
+  }
   const jwtSecret = process.env.JWT_SECRET;
 
   if (!jwtSecret) {

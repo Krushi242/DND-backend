@@ -56,7 +56,9 @@ export const createAdmin = async (req: Request, res: Response) => {
     return res.status(201).json({
       message: 'Admin created successfully',
       token,
+      accessToken: token,
       admin: safeAdmin,
+      user: safeAdmin,
     });
   } catch (error) {
     console.error('Error creating admin:', error);
@@ -95,7 +97,9 @@ export const loginAdmin = async (req: Request, res: Response) => {
     return res.status(200).json({
       message: 'Login successful',
       token,
+      accessToken: token,
       admin: safeAdmin,
+      user: safeAdmin,
     });
   } catch (error) {
     console.error('Error logging in admin:', error);
