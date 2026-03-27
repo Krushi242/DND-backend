@@ -7,11 +7,10 @@ import galleryRoutes from './routes/galleryRoutes.js';
 import videoRoutes from './routes/videoRoutes.js';
 
 const app = express();
-const MAX_VIDEO_UPLOAD_BYTES = 6 * 1024 * 1024; // Increased for Base64 overhead
+const MAX_VIDEO_UPLOAD_BYTES = 4 * 1024 * 1024;
+const MAX_GALLERY_UPLOAD_BYTES = 15 * 1024 * 1024;
 
 app.use(cors());
-app.use(express.json({ limit: '100mb' }));
-app.use(express.urlencoded({ extended: true, limit: '100mb' }));
 
 app.use('/api/videos', (req, res, next) => {
   const contentLengthHeader = req.headers['content-length'];
@@ -19,6 +18,40 @@ app.use('/api/videos', (req, res, next) => {
 
   if (Number.isFinite(contentLength) && contentLength > MAX_VIDEO_UPLOAD_BYTES) {
     return res.status(413).json({ error: 'Video file must be 4 MB or smaller' });
+  }
+
+  next();
+});
+
+app.use('/api/gallery', (req, res, next) => {
+  const contentLengthHeader = req.headers['content-length'];
+  const contentLength = typeof contentLengthHeader === 'string' ? Number(contentLengthHeader) : NaN;
+
+  if (Number.isFinite(contentLength) && contentLength > MAX_GALLERY_UPLOAD_BYTES) {
+    return res.status(413).json({ error: 'Gallery image payload is too large' });
+  }
+
+  next();
+});
+
+app.use('/api/gallery', express.json({ limit: '15mb' }));
+app.use('/api/gallery', express.urlencoded({ extended: true, limit: '15mb' }));
+app.use('/api/videos', express.json({ limit: '4mb' }));
+app.use('/api/videos', express.urlencoded({ extended: true, limit: '4mb' }));
+app.use(express.json({ limit: '1mb' }));
+app.use(express.urlencoded({ extended: true, limit: '1mb' }));
+
+app.use('/api/gallery', (req, res, next) => {
+  if (req.method === 'GET') {
+    res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=600');
+  }
+
+  next();
+});
+
+app.use('/api/videos', (req, res, next) => {
+  if (req.method === 'GET') {
+    res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=600');
   }
 
   next();
