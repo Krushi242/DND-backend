@@ -17,29 +17,17 @@ export const getVideos = async (req: Request, res: Response) => {
 
 export const createVideo = async (req: Request, res: Response) => {
   const videoUrl = req.body?.video_url ?? req.body?.video ?? req.body?.url;
-
-  if (!videoUrl) {
-    return res.status(400).json({ error: 'video_url is required' });
+  if (!videoUrl || typeof videoUrl !== 'string') {
+    return res.status(400).json({ error: 'video_url is required as a string' });
   }
 
-  if (typeof videoUrl !== 'string') {
-    return res.status(400).json({ error: 'video_url must be a string' });
-  }
-
-  if (videoUrl.startsWith('data:')) {
-    return res.status(400).json({
-      error: 'Upload the video to storage first and send its public URL in video_url',
-    });
-  }
-
-  try {
-    const parsedUrl = new URL(videoUrl);
-
-    if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
-      return res.status(400).json({ error: 'video_url must be an http or https URL' });
+  // Allow both normal URLs and Base64 data URLs
+  if (!videoUrl.startsWith('data:') && !videoUrl.startsWith('http')) {
+    try {
+      new URL(videoUrl);
+    } catch {
+      return res.status(400).json({ error: 'video_url must be a valid URL or data URI' });
     }
-  } catch {
-    return res.status(400).json({ error: 'video_url must be a valid URL' });
   }
 
   try {

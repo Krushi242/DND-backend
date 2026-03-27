@@ -7,7 +7,7 @@ import galleryRoutes from './routes/galleryRoutes.js';
 import videoRoutes from './routes/videoRoutes.js';
 
 const app = express();
-const MAX_VIDEO_UPLOAD_BYTES = 4 * 1024 * 1024;
+const MAX_VIDEO_UPLOAD_BYTES = 6 * 1024 * 1024; // Increased for Base64 overhead
 
 app.use(cors());
 app.use(express.json({ limit: '100mb' }));
