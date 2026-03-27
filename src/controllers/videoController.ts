@@ -2,6 +2,15 @@ import type { Request, Response } from 'express';
 import pool from '../config/db.js';
 import type { VideoItem } from '../models/videoModel.js';
 
+const isValidHttpUrl = (value: string) => {
+  try {
+    const parsedUrl = new URL(value);
+    return parsedUrl.protocol === 'http:' || parsedUrl.protocol === 'https:';
+  } catch {
+    return false;
+  }
+};
+
 export const getVideos = async (req: Request, res: Response) => {
   try {
     const [rows] = await pool.query<VideoItem[]>(
@@ -16,18 +25,19 @@ export const getVideos = async (req: Request, res: Response) => {
 };
 
 export const createVideo = async (req: Request, res: Response) => {
-  const videoUrl = req.body?.video_url ?? req.body?.video ?? req.body?.url;
-  if (!videoUrl || typeof videoUrl !== 'string') {
+  const rawVideoUrl = req.body?.video_url ?? req.body?.video ?? req.body?.url;
+  const videoUrl = typeof rawVideoUrl === 'string' ? rawVideoUrl.trim() : '';
+
+  if (!videoUrl) {
     return res.status(400).json({ error: 'video_url is required as a string' });
   }
 
-  // Allow both normal URLs and Base64 data URLs
-  if (!videoUrl.startsWith('data:') && !videoUrl.startsWith('http')) {
-    try {
-      new URL(videoUrl);
-    } catch {
-      return res.status(400).json({ error: 'video_url must be a valid URL or data URI' });
-    }
+  if (videoUrl.startsWith('data:')) {
+    return res.status(400).json({ error: 'Use a YouTube, Drive, or hosted video URL instead of base64 data' });
+  }
+
+  if (!isValidHttpUrl(videoUrl)) {
+    return res.status(400).json({ error: 'video_url must be a valid http or https URL' });
   }
 
   try {

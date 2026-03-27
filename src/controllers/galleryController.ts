@@ -2,6 +2,15 @@ import type { Request, Response } from 'express';
 import pool from '../config/db.js';
 import type { GalleryItem } from '../models/galleryModel.js';
 
+const isValidHttpUrl = (value: string) => {
+  try {
+    const parsedUrl = new URL(value);
+    return parsedUrl.protocol === 'http:' || parsedUrl.protocol === 'https:';
+  } catch {
+    return false;
+  }
+};
+
 export const getGalleryItems = async (req: Request, res: Response) => {
   try {
     const [rows] = await pool.query<GalleryItem[]>(
@@ -18,16 +27,25 @@ export const getGalleryItems = async (req: Request, res: Response) => {
 export const createGalleryItem = async (req: Request, res: Response) => {
   const { title, image, description, category, status } = req.body;
   const normalizedDescription = description ?? category ?? null;
+  const normalizedImage = typeof image === 'string' ? image.trim() : '';
 
-  if (!title || !image) {
+  if (!title || !normalizedImage) {
     return res.status(400).json({ error: 'Title and image are required' });
+  }
+
+  if (normalizedImage.startsWith('data:')) {
+    return res.status(400).json({ error: 'Use an image URL instead of uploading base64 data' });
+  }
+
+  if (!isValidHttpUrl(normalizedImage)) {
+    return res.status(400).json({ error: 'Image must be a valid http or https URL' });
   }
 
   try {
     const normalizedStatus = status === 0 ? 0 : 1;
     const [result] = await pool.execute(
       'INSERT INTO gallery (title, image, description, status) VALUES (?, ?, ?, ?)',
-      [title, image, normalizedDescription, normalizedStatus]
+      [title, normalizedImage, normalizedDescription, normalizedStatus]
     );
 
     const galleryId = (result as { insertId: number }).insertId;
@@ -41,7 +59,7 @@ export const createGalleryItem = async (req: Request, res: Response) => {
       item: rows[0] ?? {
         id: galleryId,
         title,
-        image,
+        image: normalizedImage,
         description: normalizedDescription,
         status: normalizedStatus,
       },
