@@ -6,6 +6,7 @@ import adminRoutes from './routes/adminRoutes.js';
 import galleryRoutes from './routes/galleryRoutes.js';
 import productRoutes from './routes/productRoutes.js';
 import videoRoutes from './routes/videoRoutes.js';
+import proxyRoutes from './routes/proxyRoutes.js';
 
 const app = express();
 const MAX_VIDEO_UPLOAD_BYTES = 4 * 1024 * 1024;
@@ -86,6 +87,7 @@ app.use('/api', adminRoutes);
 app.use('/api', galleryRoutes);
 app.use('/api', productRoutes);
 app.use('/api', videoRoutes);
+app.use('/api', proxyRoutes);
 
 app.get('/', (req, res) => {
   res.json({ message: 'DND Backend is running' });

@@ -37,6 +37,8 @@ CREATE TABLE IF NOT EXISTS videos (
 CREATE TABLE IF NOT EXISTS products (
   id INT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(255) NOT NULL,
+  display_order INT DEFAULT NULL,
+  is_active TINYINT(1) DEFAULT 1,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -46,6 +48,8 @@ CREATE TABLE IF NOT EXISTS product_variants (
   title VARCHAR(255) NOT NULL,
   image VARCHAR(255),
   description TEXT,
+  display_order INT DEFAULT NULL,
+  is_active TINYINT(1) DEFAULT 1,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT fk_product_variants_product
     FOREIGN KEY (product_id) REFERENCES products(id)
