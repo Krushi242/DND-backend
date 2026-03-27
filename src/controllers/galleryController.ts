@@ -16,7 +16,8 @@ export const getGalleryItems = async (req: Request, res: Response) => {
 };
 
 export const createGalleryItem = async (req: Request, res: Response) => {
-  const { title, image, description, status } = req.body;
+  const { title, image, description, category, status } = req.body;
+  const normalizedDescription = description ?? category ?? null;
 
   if (!title || !image) {
     return res.status(400).json({ error: 'Title and image are required' });
@@ -26,7 +27,7 @@ export const createGalleryItem = async (req: Request, res: Response) => {
     const normalizedStatus = status === 0 ? 0 : 1;
     const [result] = await pool.execute(
       'INSERT INTO gallery (title, image, description, status) VALUES (?, ?, ?, ?)',
-      [title, image, description ?? null, normalizedStatus]
+      [title, image, normalizedDescription, normalizedStatus]
     );
 
     const galleryId = (result as { insertId: number }).insertId;
@@ -41,7 +42,7 @@ export const createGalleryItem = async (req: Request, res: Response) => {
         id: galleryId,
         title,
         image,
-        description: description ?? null,
+        description: normalizedDescription,
         status: normalizedStatus,
       },
     });
