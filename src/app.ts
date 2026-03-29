@@ -57,29 +57,6 @@ app.use('/api/videos', express.urlencoded({ extended: true, limit: '4mb' }));
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
-app.use('/api/gallery', (req, res, next) => {
-  if (req.method === 'GET') {
-    res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=600');
-  }
-
-  next();
-});
-
-app.use('/api/videos', (req, res, next) => {
-  if (req.method === 'GET') {
-    res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=600');
-  }
-
-  next();
-});
-
-app.use('/api/products', (req, res, next) => {
-  if (req.method === 'GET') {
-    res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=600');
-  }
-
-  next();
-});
 
 // API Routes
 app.use('/api', contactRoutes);
